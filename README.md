@@ -145,8 +145,8 @@ Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de 
 
 ## 📄 Contact
 
-Disocrd : iceyouri
-Mail : steckoyouri@gmail.com
+- Disocrd : iceyouri
+- Mail : steckoyouri@gmail.com
 
 ---
 
@@ -156,6 +156,7 @@ Mail : steckoyouri@gmail.com
 - Pour interagir avec le contrat, connectez MetaMask à votre réseau local (localhost:8545).
 - Le premier compte Hardhat est l'admin par défaut
 - Par manque de temps, nous n'avons pas testé le déploiement sur un réseau de production ni réalisé la vidéo de démo.
+- La connexion avec le front n'a pas pu être terminée
 
 ---
 
