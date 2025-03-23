@@ -36,7 +36,7 @@ voting-dapp/
 
 ## 📄 Répartition du travail 
 
-lien vers le fichier de répartition du travail : @notion à ajouter par Walid
+lien vers le fichier de répartition du travail : @notion à ajouter par Walid (ou Habib mais il a pas l'air trop inquiété
 
 ---
 
