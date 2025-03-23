@@ -92,7 +92,7 @@ Les tests ont permis de vérifier :
 
 ```bash
 git clone <lien-du-repo>
-cd voting-test
+cd voting-project
 ```
 
 ### 2. Installer les dépendances
@@ -162,8 +162,8 @@ Mail : steckoyouri@gmail.com
 
 ### 🙌 Auteurs
 
-Youri STECKO
-Walid SAKOUKNI
+- Youri STECKO
+- Walid SAKOUKNI
 
 
 
