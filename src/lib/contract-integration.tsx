@@ -130,6 +130,8 @@ export function ContractSetup() {
       const success = await initialize()
       if (!success) {
         throw new Error("Échec de l'initialisation des contrats")
+      } else {
+        setError(null) // Nettoyer l'erreur visuelle si l'initialisation réussit
       }
     } catch (err: any) {
       setError(err.message || "Une erreur est survenue")
@@ -170,7 +172,7 @@ export function ContractSetup() {
             required
           />
         </div>
-        {error && <p className="text-red-500 text-sm">{error}</p>}
+        {!isInitialized && error && <p className="text-red-500 text-sm">{error}</p>}
         <button
           type="submit"
           disabled={isLoading || isInitialized}
@@ -188,4 +190,3 @@ export function ContractSetup() {
     </div>
   )
 }
-

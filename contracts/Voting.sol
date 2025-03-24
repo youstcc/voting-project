@@ -7,7 +7,6 @@ import "./Whitelist.sol";  // Import du contrat Whitelist
 contract Voting is Ownable {
     Whitelist public whitelist;
 
-
     enum WorkflowStatus {
         RegisteringVoters,
         ProposalsRegistrationStarted,
@@ -18,6 +17,7 @@ contract Voting is Ownable {
     }
 
     struct Voter {
+        bool isRegistered;
         bool hasVoted;
         uint votedProposalId;
     }
@@ -31,13 +31,32 @@ contract Voting is Ownable {
     mapping(address => Voter) public voters;
     Proposal[] public proposals;
     uint public winningProposalId;
+    uint public totalVoters;
+    uint public totalVotes;
 
     event ProposalRegistered(uint proposalId);
     event Voted(address voter, uint proposalId);
     event WorkflowStatusChange(WorkflowStatus previousStatus, WorkflowStatus newStatus);
+    event VoterRegistered(address voterAddress);
 
     constructor(address _whitelistAddress) Ownable(msg.sender) {
         whitelist = Whitelist(_whitelistAddress);
+    }
+
+    function registerVoter(address _voter) external onlyOwner {
+        require(status == WorkflowStatus.RegisteringVoters, "Voter registration is not open");
+        require(whitelist.isWhitelisted(_voter), "Address not in whitelist");
+        require(!voters[_voter].hasVoted && voters[_voter].votedProposalId == 0, "Already registered");
+
+        voters[_voter] = Voter({
+            isRegistered: true,
+            hasVoted: false,
+            votedProposalId: 0
+        });
+
+        totalVoters++;
+
+        emit VoterRegistered(_voter);
     }
 
     modifier onlyWhitelisted() {
@@ -68,7 +87,11 @@ contract Voting is Ownable {
         emit WorkflowStatusChange(WorkflowStatus.ProposalsRegistrationEnded, WorkflowStatus.VotingSessionStarted);
     }
 
-
+    function endVoting() external onlyOwner {
+        require(status == WorkflowStatus.VotingSessionStarted, "Wrong status");
+        status = WorkflowStatus.VotingSessionEnded;
+        emit WorkflowStatusChange(WorkflowStatus.VotingSessionStarted, WorkflowStatus.VotingSessionEnded);
+    }
 
     function vote(uint _proposalId) external onlyWhitelisted {
         require(status == WorkflowStatus.VotingSessionStarted, "Voting session closed");
@@ -77,6 +100,8 @@ contract Voting is Ownable {
         voters[msg.sender].hasVoted = true;
         voters[msg.sender].votedProposalId = _proposalId;
         proposals[_proposalId].voteCount++;
+
+        totalVotes++;
 
         emit Voted(msg.sender, _proposalId);
     }
@@ -89,7 +114,47 @@ contract Voting is Ownable {
         require(status == WorkflowStatus.VotesTallied, "Votes not tallied yet");
         return proposals[winningProposalId];
     }
+
+    function tallyVotes() external onlyOwner {
+        require(status == WorkflowStatus.VotingSessionEnded, "Wrong status");
+        
+        uint winningVoteCount = 0;
+
+        for (uint i = 0; i < proposals.length; i++) {
+            if (proposals[i].voteCount > winningVoteCount) {
+                winningVoteCount = proposals[i].voteCount;
+                winningProposalId = i;
+            }
+        }
+
+        status = WorkflowStatus.VotesTallied;
+        emit WorkflowStatusChange(WorkflowStatus.VotingSessionEnded, WorkflowStatus.VotesTallied);
+    }
+
+    function getAllProposals() public view returns (Proposal[] memory) {
+        return proposals;
+    }
+
+    function getParticipationStats() external view returns (uint, uint, uint) {
+        uint participationRate = totalVoters > 0 ? (totalVotes * 100) / totalVoters : 0;
+        return (totalVoters, totalVotes, participationRate);
+    }
+
+    function restartVotingSession() external onlyOwner {
+        require(status == WorkflowStatus.VotesTallied, "Can restart only after votes are tallied");
+        
+        // Reset proposals and voter states
+        delete proposals;
+        for (uint i = 0; i < totalVoters; i++) {
+            voters[msg.sender].hasVoted = false;
+            voters[msg.sender].votedProposalId = 0;
+        }
+        
+        winningProposalId = 0;
+        totalVotes = 0;
+
+        // Restart workflow
+        status = WorkflowStatus.RegisteringVoters;
+        emit WorkflowStatusChange(WorkflowStatus.VotesTallied, WorkflowStatus.RegisteringVoters);
+    }
 }
-
-
-

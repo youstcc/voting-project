@@ -16,12 +16,19 @@ export const connectMetaMask = async (): Promise<string[]> => {
       throw new Error("MetaMask n'est pas installé");
     }
 
-    // Demander la connexion au compte
+    // Vérifie si des comptes sont déjà connectés
+    const existingAccounts = await ethereum.request({ method: "eth_accounts" });
+
+    if (existingAccounts.length > 0) {
+      return existingAccounts;
+    }
+
+    // Sinon, demande la connexion
     const accounts = await ethereum.request({ method: "eth_requestAccounts" });
 
     return accounts;
   } catch (error) {
-    console.error("Erreur lors de la connexion à MetaMask:", error);
+    console.error("Erreur lors de la connexion à MetaMask:", JSON.stringify(error, Object.getOwnPropertyNames(error)));
     throw error;
   }
 };
@@ -101,4 +108,3 @@ export const switchAccount = async (): Promise<void> => {
     throw error
   }
 }
-

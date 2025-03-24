@@ -3,7 +3,8 @@
 import { createContext, useContext, useState, useEffect, type ReactNode, useCallback } from "react";
 import { ethers } from "ethers";
 import { getCurrentAccount, listenForAccountChanges } from "./metamask";
-import { initializeContracts, workflowStatusToPhase, isUserWhitelisted, getWhitelistedVoters, hasUserVoted } from "./contracts";
+import { initializeContracts, workflowStatusToPhase, isUserWhitelisted, getWhitelistedVoters, hasUserVoted, startProposalsRegistration } from "./contracts";
+import VotingABI from "./abi/VotingABI.json"; // Added import
 
 // Définition des phases du vote
 // Phases de l'application
@@ -32,6 +33,7 @@ const defaultContext: ContractContextType = {
   setAdminAddress: () => {},
   setContractAddresses: () => {},
   initialize: async () => false,
+  startProposalsRegistration: async () => false,
 };
 
 
@@ -53,6 +55,7 @@ interface ContractContextType {
   setContractAddresses: (votingAddress: string, whitelistAddress: string) => void;
   initialize: () => Promise<boolean>;
   registerVoter: (address: string) => Promise<void>;
+  startProposalsRegistration: () => Promise<boolean>;
 }
 
 const ContractContext = createContext<ContractContextType>(defaultContext);
@@ -114,6 +117,15 @@ export const ContractProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // Démarrer l'enregistrement des propositions
+  const handleStartProposalsRegistration = async () => {
+    if (!votingContractAddress) return false;
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const signer = await provider.getSigner();
+    const contract = new ethers.Contract(votingContractAddress, VotingABI, signer); // Updated line
+    return await startProposalsRegistration(contract);
+  };
+
   // Récupérer l'adresse MetaMask
   useEffect(() => {
     const fetchAccount = async () => {
@@ -146,12 +158,10 @@ export const ContractProvider = ({ children }: { children: ReactNode }) => {
         setContractAddresses,
         initialize,
         registerVoter,
+        startProposalsRegistration: handleStartProposalsRegistration,
       }}
     >
       {children}
     </ContractContext.Provider>
   );
-};
-
-
-
+}

@@ -37,6 +37,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.2.3",
     "hardhat": "^2.22.19",
+    "hardhat-deploy": "^1.0.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

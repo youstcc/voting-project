@@ -12,6 +12,17 @@ export enum WorkflowStatus {
   VotesTallied = 5,
 }
 
+export const startProposalsRegistration = async (votingContract: ethers.Contract): Promise<boolean> => {
+  try {
+    const tx = await votingContract.startProposalsRegistration()
+    await tx.wait()
+    return true
+  } catch (error) {
+    console.error("Erreur lors du démarrage de la session de propositions :", error)
+    return false
+  }
+}
+
 // Interface pour les propositions formatées
 export interface FormattedProposal {
   id: number
@@ -27,7 +38,7 @@ export interface ContractProposal {
   voteCount: bigint
 }
 
-// Fonction pour initialiser les contrats
+// ✅ Fonction pour initialiser les contrats
 export const initializeContracts = async (votingContractAddress: string, whitelistContractAddress: string) => {
   try {
     // Vérifier si MetaMask est installé
@@ -39,13 +50,21 @@ export const initializeContracts = async (votingContractAddress: string, whiteli
       return null
     }
 
+    console.log("🧪 Vérification des adresses :");
+    console.log("Voting :", votingContractAddress, "=>", ethers.isAddress(votingContractAddress));
+    console.log("Whitelist :", whitelistContractAddress, "=>", ethers.isAddress(whitelistContractAddress));
+
+    // ✅ Vérifier que les adresses sont valides
+    if (!ethers.isAddress(votingContractAddress) || !ethers.isAddress(whitelistContractAddress)) {
+      throw new Error("Les adresses des contrats doivent être valides")
+    }
+
     // Créer un provider et un signer
     const provider = new ethers.BrowserProvider(ethereum)
     const signer = await provider.getSigner()
 
     // Initialiser les contrats
     const votingContract = new ethers.Contract(votingContractAddress, VotingABI, signer)
-
     const whitelistContract = new ethers.Contract(whitelistContractAddress, WhitelistABI, signer)
 
     return { votingContract, whitelistContract, provider, signer }
@@ -87,7 +106,6 @@ export const formatProposals = (
     const description = lines.slice(1).join("\n") || title
 
     // Utiliser une adresse aléatoire de la liste des électeurs comme auteur fictif
-    // (puisque le contrat ne stocke pas l'auteur)
     const randomIndex = Math.floor(Math.random() * Math.max(1, voterAddresses.length))
     const author =
       voterAddresses.length > 0 ? voterAddresses[randomIndex] : "0x0000000000000000000000000000000000000000"
@@ -129,20 +147,17 @@ export const getWhitelistedVoters = async (
   provider: ethers.Provider,
 ): Promise<string[]> => {
   try {
-    // Récupérer les événements AddressAdded
     const filter = whitelistContract.filters.AddressAdded()
     const events = await whitelistContract.queryFilter(filter)
 
-    // Extraire les adresses des événements
     const addresses = events.map((event) => {
-      if ('args' in event) {
+      if ("args" in event) {
         const args = event.args as unknown as { _address: string }
         return args._address
       }
       return null
     })
 
-    // Vérifier que les adresses sont toujours dans la whitelist
     const validAddresses = await Promise.all(
       addresses.map(async (address) => {
         const isWhitelisted = await whitelistContract.isWhitelisted(address)
@@ -156,4 +171,3 @@ export const getWhitelistedVoters = async (
     return []
   }
 }
-

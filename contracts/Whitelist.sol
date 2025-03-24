@@ -1,4 +1,3 @@
-
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
@@ -10,10 +9,10 @@ contract Whitelist is Ownable {
     event AddressAdded(address indexed _address);
     event AddressRemoved(address indexed _address);
 
-    constructor() Ownable(msg.sender) { }  // 
+    constructor() Ownable(msg.sender) { }  
 
     function addAddressToWhitelist(address _address) external onlyOwner {
-        require(!whitelistedAddresses[_address], "already used address");
+        require(!whitelistedAddresses[_address], "Address is already whitelisted");
         whitelistedAddresses[_address] = true;
         emit AddressAdded(_address);
     }
@@ -28,4 +27,3 @@ contract Whitelist is Ownable {
         return whitelistedAddresses[_address];
     }
 }
-
