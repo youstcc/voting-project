@@ -38,6 +38,8 @@ voting-dapp/
 
 lien vers le fichier de répartition du travail : @notion à ajouter par Walid (ou Habib mais il a pas l'air trop inquiété)
 
+https://www.notion.so/ToDo-1badcde89428812da0bcc3a56e25cff7?pvs=4
+
 ---
 
 
@@ -165,6 +167,7 @@ Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de 
 
 - Youri STECKO
 - Walid SAKOUKNI
+- Habib BELIL
 
 
 
